@@ -372,7 +372,7 @@ public fun <T> Sequence<T>.dropWhile(predicate: (T) -> Boolean): Sequence<T> {
  * The operation is _intermediate_ and _stateless_.
  */
 public fun <T> Sequence<T>.filter(predicate: (T) -> Boolean): Sequence<T> {
-    return FilteringSequence(this, true, predicate)
+    return FilteringSequence(this, true, predicate, null)
 }
 
 /**
@@ -384,7 +384,8 @@ public fun <T> Sequence<T>.filter(predicate: (T) -> Boolean): Sequence<T> {
  */
 public fun <T> Sequence<T>.filterIndexed(predicate: (index: Int, T) -> Boolean): Sequence<T> {
     // TODO: Rewrite with generalized MapFilterIndexingSequence
-    return TransformingSequence(FilteringSequence(IndexingSequence(this), true, { predicate(it.index, it.value) }), { it.value })
+    return FilteringIndexedSequence(this, true, predicate)
+//    return TransformingSequence(FilteringSequence(IndexingSequence(this), true, { predicate(it.index, it.value) }), { it.value })
 }
 
 /**
@@ -427,7 +428,7 @@ public inline fun <reified R, C : MutableCollection<in R>> Sequence<*>.filterIsI
  * The operation is _intermediate_ and _stateless_.
  */
 public fun <T> Sequence<T>.filterNot(predicate: (T) -> Boolean): Sequence<T> {
-    return FilteringSequence(this, false, predicate)
+    return FilteringSequence(this, false, predicate, null)
 }
 
 /**

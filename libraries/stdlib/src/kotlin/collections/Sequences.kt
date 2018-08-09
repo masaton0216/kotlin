@@ -104,13 +104,16 @@ public fun <T, R> Sequence<Pair<T, R>>.unzip(): Pair<List<T>, List<R>> {
 internal class FilteringSequence<T>(
     private val sequence: Sequence<T>,
     private val sendWhen: Boolean = true,
-    private val predicate: (T) -> Boolean
+    private val predicate: ((T) -> Boolean),
+    private val predicateIndexed: ((Int, T) -> Boolean)?
 ) : Sequence<T> {
 
     override fun iterator(): Iterator<T> = object : Iterator<T> {
         val iterator = sequence.iterator()
         var nextState: Int = -1 // -1 for unknown, 0 for done, 1 for continue
         var nextItem: T? = null
+
+        var index: Int = 0
 
         private fun calcNext() {
             while (iterator.hasNext()) {
@@ -121,6 +124,26 @@ internal class FilteringSequence<T>(
                     return
                 }
             }
+//            if (predicate != null) {
+//                while (iterator.hasNext()) {
+//                    val item = iterator.next()
+//                    if (predicate.invoke(item) == sendWhen) {
+//                        nextItem = item
+//                        nextState = 1
+//                        return
+//                    }
+//                }
+//            } else {
+//                predicateIndexed!!
+//                while (iterator.hasNext()) {
+//                    val item = iterator.next()
+//                    if (predicateIndexed.invoke(checkIndexOverflow(index++), item) == sendWhen) {
+//                        nextItem = item
+//                        nextState = 1
+//                        return
+//                    }
+//                }
+//            }
             nextState = 0
         }
 
@@ -183,6 +206,51 @@ constructor(private val sequence: Sequence<T>, private val transformer: (Int, T)
 
         override fun hasNext(): Boolean {
             return iterator.hasNext()
+        }
+    }
+}
+
+internal class FilteringIndexedSequence<T>
+constructor(
+    private val sequence: Sequence<T>,
+    private val sendWhen: Boolean = true,
+    private val predicate: (Int, T) -> Boolean
+) : Sequence<T> {
+
+    override fun iterator(): Iterator<T> = object : Iterator<T> {
+        val iterator = sequence.iterator()
+        var nextState: Int = -1 // -1 for unknown, 0 for done, 1 for continue
+        var nextItem: T? = null
+        var index: Int = 0
+
+        private fun calcNext() {
+            while (iterator.hasNext()) {
+                val item = iterator.next()
+                if (predicate(checkIndexOverflow(index++), item) == sendWhen) {
+                    nextItem = item
+                    nextState = 1
+                    return
+                }
+            }
+            nextState = 0
+        }
+
+        override fun next(): T {
+            if (nextState == -1)
+                calcNext()
+            if (nextState == 0)
+                throw NoSuchElementException()
+            val result = nextItem
+            nextItem = null
+            nextState = -1
+            @Suppress("UNCHECKED_CAST")
+            return result as T
+        }
+
+        override fun hasNext(): Boolean {
+            if (nextState == -1)
+                calcNext()
+            return nextState == 1
         }
     }
 }

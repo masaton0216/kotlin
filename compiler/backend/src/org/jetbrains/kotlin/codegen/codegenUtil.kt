@@ -7,6 +7,7 @@
 package org.jetbrains.kotlin.codegen
 
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.backend.common.isTopLevelInPackage
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.codegen.context.CodegenContext
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
@@ -36,6 +37,7 @@ import org.jetbrains.kotlin.resolve.annotations.hasJvmStaticAnnotation
 import org.jetbrains.kotlin.resolve.calls.callUtil.getFirstArgumentExpression
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.descriptorUtil.builtIns
+import org.jetbrains.kotlin.resolve.isInlineClassType
 import org.jetbrains.kotlin.resolve.jvm.JvmClassName
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOrigin
 import org.jetbrains.kotlin.resolve.scopes.receivers.TransientReceiver
@@ -322,7 +324,7 @@ fun initializeVariablesForDestructuredLambdaParameters(codegen: ExpressionCodege
 
         val destructuringDeclaration =
             (DescriptorToSourceUtils.descriptorToDeclaration(parameterDescriptor) as? KtParameter)?.destructuringDeclaration
-                    ?: error("Destructuring declaration for descriptor $parameterDescriptor not found")
+                ?: error("Destructuring declaration for descriptor $parameterDescriptor not found")
 
         codegen.initializeDestructuringDeclarationVariables(
             destructuringDeclaration,
@@ -418,4 +420,19 @@ fun MethodNode.textifyMethodNode(): String {
     val sw = StringWriter()
     text.print(PrintWriter(sw))
     return "$sw"
+}
+
+fun KotlinType.isInlineClassTypeWithPrimitiveEquality(): Boolean {
+    if (!isInlineClassType()) return false
+
+    // Treat kotlin.{UByte, UShort, UInt, ULong} as inline classes with primitive equality even if they are not
+    val classDescriptor = constructor.declarationDescriptor as? ClassDescriptor ?: return false
+    if (classDescriptor.isTopLevelInPackage("UByte", "kotlin") ||
+        classDescriptor.isTopLevelInPackage("UShort", "kotlin") ||
+        classDescriptor.isTopLevelInPackage("UInt", "kotlin") ||
+        classDescriptor.isTopLevelInPackage("ULong", "kotlin")
+    ) return true
+
+    // TODO support other inline classes that can be compared as underlying primitives
+    return false
 }

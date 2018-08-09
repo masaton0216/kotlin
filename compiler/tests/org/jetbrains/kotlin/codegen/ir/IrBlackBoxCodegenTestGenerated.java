@@ -11318,6 +11318,11 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
             runTest("compiler/testData/codegen/box/inlineClasses/inlineClassAsLastExpressionInInLambda.kt");
         }
 
+        @TestMetadata("inlineClassEqualityShouldUseTotalOrderForFloatingPointData.kt")
+        public void testInlineClassEqualityShouldUseTotalOrderForFloatingPointData() throws Exception {
+            runTest("compiler/testData/codegen/box/inlineClasses/inlineClassEqualityShouldUseTotalOrderForFloatingPointData.kt");
+        }
+
         @TestMetadata("inlineClassImplementsCollection.kt")
         public void testInlineClassImplementsCollection() throws Exception {
             runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsCollection.kt");
@@ -11326,6 +11331,11 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
         @TestMetadata("inlineClassValuesInsideStrings.kt")
         public void testInlineClassValuesInsideStrings() throws Exception {
             runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValuesInsideStrings.kt");
+        }
+
+        @TestMetadata("inlineClassWithCustomEquals.kt")
+        public void testInlineClassWithCustomEquals() throws Exception {
+            runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithCustomEquals.kt");
         }
 
         @TestMetadata("inlineClassesCheckCast.kt")
@@ -11361,6 +11371,11 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
         @TestMetadata("noAssertionsOnInlineClassBasedOnNullableType.kt")
         public void testNoAssertionsOnInlineClassBasedOnNullableType() throws Exception {
             runTest("compiler/testData/codegen/box/inlineClasses/noAssertionsOnInlineClassBasedOnNullableType.kt");
+        }
+
+        @TestMetadata("nullableEqeqNonNull.kt")
+        public void testNullableEqeqNonNull() throws Exception {
+            runTest("compiler/testData/codegen/box/inlineClasses/nullableEqeqNonNull.kt");
         }
 
         @TestMetadata("passInlineClassAsVararg.kt")

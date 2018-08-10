@@ -13,7 +13,6 @@ import com.intellij.openapi.roots.DependencyScope
 import com.intellij.openapi.roots.ExternalLibraryDescriptor
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.idea.configuration.*
-import org.jetbrains.kotlin.idea.test.PluginTestCaseBase
 import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
 import org.jetbrains.kotlin.idea.util.application.runReadAction
 import org.jetbrains.kotlin.test.KotlinTestUtils
@@ -26,7 +25,6 @@ import org.junit.Test
 import java.io.File
 
 class GradleConfiguratorTest : GradleImportingTestCase() {
-    private val testDir = PluginTestCaseBase.getTestDataPathBase() + "/gradle/configurator/"
 
     @Test
     fun testProjectWithModule() {
@@ -672,19 +670,8 @@ class GradleConfiguratorTest : GradleImportingTestCase() {
         }
     }
 
-    private fun configureByFiles(): List<VirtualFile> {
-        val rootDir = rootDir()
-        assert(rootDir.exists()) { "Directory ${rootDir.path} doesn't exist" }
-
-        return rootDir.walk().mapNotNull {
-            when {
-                it.isDirectory -> null
-                !it.name.endsWith(SUFFIX) -> {
-                    createProjectSubFile(it.path.substringAfter(rootDir.path + File.separator), it.readText())
-                }
-                else -> null
-            }
-        }.toList()
+    override fun testDataDirName(): String {
+        return "configurator"
     }
 
     private fun checkFiles(files: List<VirtualFile>) {
@@ -696,15 +683,13 @@ class GradleConfiguratorTest : GradleImportingTestCase() {
                     || it.name == GradleConstants.SETTINGS_FILE_NAME
         }
             .forEach {
-                if (it.name == GradleConstants.SETTINGS_FILE_NAME && !File(rootDir(), it.name + SUFFIX).exists()) return@forEach
+                if (it.name == GradleConstants.SETTINGS_FILE_NAME && !File(
+                        testDataDirectory(),
+                        it.name + SUFFIX
+                    ).exists()
+                ) return@forEach
                 val actualText = LoadTextUtil.loadText(it).toString()
-                KotlinTestUtils.assertEqualsToFile(File(rootDir(), it.name + SUFFIX), actualText)
+                KotlinTestUtils.assertEqualsToFile(File(testDataDirectory(), it.name + SUFFIX), actualText)
             }
-    }
-
-    private fun rootDir() = File(testDir, getTestName(true).substringBefore("_"))
-
-    companion object {
-        private val SUFFIX = ".after"
     }
 }
